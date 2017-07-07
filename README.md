@@ -23,7 +23,7 @@ the script will use MATLAB gpuarray to store data and weights.
 ## Experimental results
 
 ### Classification Error (MNIST)
-In these experiments, EigenPro (Primal) achieves classification error 1.23%, after only 10 epochs. In comparison, Pegasos takes 160 epochs to reach the same error. Although the number of random features used by EigenPro (Random) and RF/DSGD is 6 * 10^4, same as the number of training points, methods using random features deliver slighly worse performance. Specifically, RF/DSGD has error rate 1.71% after 40 epochs and Pegasos reaches error rate 1.65% after the same number of epochs.
+In these experiments, EigenPro (Primal) achieves classification error 1.23%, after only 10 epochs. In comparison, Pegasos takes 160 epochs to reach the same error. Although the number of random features used by EigenPro (Random) and RF/DSGD is 6 * 10^4, same as the number of training points, methods using random features deliver generally worse performance. Specifically, RF/DSGD has error rate 1.71% after 40 epochs and Pegasos reaches error rate 1.65% after the same number of epochs.
 
 <table>
   <tr>
