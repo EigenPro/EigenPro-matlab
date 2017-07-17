@@ -1,4 +1,5 @@
-use_gpu = false; % gpu usage flag.
+use_gpu = true; % gpu usage flag.
+ktype = 'Gaussian'; % kernel type.
 floatx = @(x) single(x);
 
 % Load MNIST dataset.
@@ -22,11 +23,18 @@ end
 % Parameters.
 bs = 256;           % mini-batch size.
 eta = floatx(5);    % step size.
-s2 = 25;            % variance of Gaussian kernel.
 M = 4800;           % (EigenPro) subsample size.
 k = 160;            % (EigenPro) top-k eigensystem.
 
-gamma = 1 /(2*s2);  % shape parameter of Gaussian kernel.
+% Set kernel bandwidth.
+if strcmp(ktype, 'Gaussian')
+	s = 5;
+elseif strcmp(ktype, 'Laplace')
+	s = floatx(sqrt(10));
+elseif strcmp(ktype, 'Cauchy')
+	s = floatx(sqrt(40));
+end
+
 n = size(train_x, 1); % number of training samples.
 N = size(train_x, 2); % number of raw features.
 d = floor(size(train_x, 1) / 2) * 2; % number of random features.
@@ -35,19 +43,20 @@ l = size(train_y, 2); % number of labels.
 rs = RandStream('mt19937ar', 'Seed', 1);
 
 % Wrap feature map.
-phi_rbf = @(x) rbf_kernel(x, train_x, gamma); % RBF kernel map.
-normal = floatx(sqrt(2 * gamma) * randn(rs, N, d/2));
+phi_rbf = @(x) kernel(x, train_x, s, ktype); % kernel map.
+normal = floatx(randn(rs, N, d/2) / s);
 if use_gpu
     normal = gpuArray(normal);
 end
-phi_rff = @(x) rff(x, normal, use_gpu); % random Fourier feature map.
+% Random Fourier feature map (for Gaussian kernel).
+phi_rff = @(x) rff(x, normal, use_gpu);
 
 alpha = new_weight(n, l);
 alpha_ep = new_weight(n, l);
 beta = new_weight(d, l);
 beta_ep = new_weight(d, l);
 cur_epoch = 0;
-pega_t = 0; epro_t = 0; rf_t = 0; repro_t = 0; % timing .
+pega_t = 0; epro_t = 0; rf_t = 0; repro_t = 0; % for timing.
 rs.reset();
 for n_epoch = [1 5 10 20 40 80 160 320]
   fprintf('\n');
