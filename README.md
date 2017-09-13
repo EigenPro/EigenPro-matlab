@@ -171,7 +171,7 @@ In these experiments, EigenPro (Primal) achieves classification error 1.23%, aft
     <td>1.58%</td>
     <td>2.32%</td>
     <td>0.03%</td>
-    <td>1.44%</td>
+    <td><b>1.44%</b></td>
     <td>1.66%</td>
     <td>2.37%</td>
   </tr>
@@ -193,7 +193,7 @@ In these experiments, EigenPro (Primal) achieves classification error 1.23%, aft
     <td>0.39%</td>
     <td>1.65%</td>
     <td>0.0%</td>
-    <td><b>1.46%</b></td>
+    <td>1.46%</td>
     <td>0.49%</td>
     <td>1.71%</td>
   </tr>
