@@ -22,7 +22,6 @@ end
 
 % Parameters.
 bs = 256;           % mini-batch size.
-eta = floatx(5);    % step size.
 M = 4800;           % (EigenPro) subsample size.
 k = 160;            % (EigenPro) top-k eigensystem.
 
@@ -50,6 +49,10 @@ if use_gpu
 end
 % Random Fourier feature map (for Gaussian kernel).
 phi_rff = @(x) rff(x, normal, use_gpu);
+
+% Calculate the step size.
+[s, V, lambda] = rsvd(train_x, phi_rbf, 100, 2);
+eta = 1.5 / (2 * s(1) / 60000);
 
 alpha = new_weight(n, l);
 alpha_ep = new_weight(n, l);
