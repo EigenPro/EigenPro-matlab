@@ -52,7 +52,7 @@ phi_rff = @(x) rff(x, normal, use_gpu);
 
 % Calculate the step size.
 [s, V, lambda] = rsvd(train_x, phi_rbf, 100, 2);
-eta = 1.5 / (2 * s(1) / 60000);
+eta = 1.5 / (2 * s(1) / n);
 
 alpha = new_weight(n, l);
 alpha_ep = new_weight(n, l);

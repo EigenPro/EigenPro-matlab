@@ -11,8 +11,8 @@ function [s, V, lambda] = rsvd(X, phi, M, k)
 %	k: top eigensystem.
 %
 % [output]
-%	s: top-k eigenvalue vector of X^TX in desecding order.
-%	V: top-k eigenvectors of X^TX.
+%	s: top-k eigenvalue vector of phi(X) in desecding order.
+%	V: top-k eigenvectors of phi(X).
 %	lambda: (k+1)-th largest eigenvalue.
 
 n = size(X, 1);
