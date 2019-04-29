@@ -59,7 +59,7 @@ alpha_ep = new_weight(n, l);
 beta = new_weight(d, l);
 beta_ep = new_weight(d, l);
 cur_epoch = 0;
-pega_t = 0; epro_t = 0; rf_t = 0; % for timing.
+pega_t = 0; epro_t = 0; rf_t = 0;% for timing.
 rs.reset();
 ep_model = Eigenpro('random_stream', rs,...
     'subsample_size', M, 'n_components', k, 'mem_gb', 3);
@@ -81,7 +81,7 @@ for n_epoch = [1 2 5 10]
   fprintf('Pegasos on MNIST\n');
   [alpha, t] = sgd_iterate(rs, train_x, train_y, alpha, phi_rbf, eta, ...
                            bs, n_epoch - cur_epoch, 'Pegasos');
-  sgd_t = sgd_t + t;
+  pega_t = pega_t + t;
   train_err = evaluate(train_x, train_y, alpha, phi_rbf) * 100;
   test_err = evaluate(test_x, test_y, alpha, phi_rbf) * 100;
   fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
