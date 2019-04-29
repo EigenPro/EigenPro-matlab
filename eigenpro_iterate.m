@@ -1,58 +1,33 @@
-function [alpha, t] = eigenpro_iterate(rstream, X, Y, alpha, phi, eta, bs, n_epoch, method, k, M, tau)
+function [model] = eigenpro_iterate(model, X, y, pinx)
 % Train least squared regression model with feature map
 %	by mini-batch EigenPro iteration.
 %
 % [input]
-%   rstream: random number stream.
-%   X: [n_example, n_raw_feature]: raw feature matrix.
-%   Y: [n_example, n_label]: label matrix.
-%	alpha: [n_feature, n_label]: weight matrix.
-%   phi: feature map.
-%	eta: step size.
-%	bs: mini-batch size.
-%   method: training method name (Kernel EigenPro or EigenPro).
-%   k: the number of eigendirections.
-%   tau: damping factor.
-%
+%   model: Eigenpro model 
 % [output]
 %   alpha: updated weight matrix.
-%   t: iteration time.
-
-% Subsampled randomized SVD.
-[Lambda, V, lambda] = rsvd(X, phi, M, k);
-if strcmp(method, 'Kernel EigenPro')
-    eigenpro_eta= eta * sqrt(Lambda(1) / lambda);
-elseif strcmp(method, 'EigenPro')
-    % Eigenvalues of the design matrix (in Lambda) are
-    %   square root of eigenvalues of covariance matrix.
-    eigenpro_eta = eta * Lambda(1) / lambda;
-end
 
 % EigenPro iteration.
 n = size(X, 1);
-st = clock;
-for epoch = 1:n_epoch
-    inx = randperm(rstream, n);
+if ischar(model.alpha) % Not yet fit
+    model.alpha = single(zeros(n, size(y, 2)));
+end
+step = model.eta ./ single(model.batch_size);
 
-    for sindex = 1:bs:n
-        eindex = min(sindex + bs - 1, n);
+for epoch = 1:model.n_epoch
+    inx = randperm(model.random_stream, n);
+
+    for sindex = 1:model.batch_size:n
+        eindex = min(sindex + model.batch_size - 1, n);
         mbinx = inx(sindex: eindex);
         batch_x = X(mbinx, :);
-        batch_y = Y(mbinx, :);
-        batch_px = phi(batch_x);
-
-        if strcmp(method, 'Kernel EigenPro')
-            g = 1./ bs * (batch_px * alpha - batch_y);
-            alpha(mbinx, :) = alpha(mbinx, :) - eigenpro_eta * g;
-            DgT = g' * batch_px * V * diag((1 - sqrt(tau * lambda ./ Lambda)) ./ Lambda) * V';
-            alpha = alpha + eigenpro_eta * DgT';
-
-        elseif strcmp(method, 'EigenPro')
-            g = 1./ bs * (batch_px.' * (batch_px * alpha - batch_y));
-            alpha = alpha - eigenpro_eta * g;
-            DgT = g' * V * diag(1 - tau * lambda ./ Lambda) * V';
-            alpha = alpha + eigenpro_eta * DgT';
-        end
+        batch_y = y(mbinx, :);
+        batch_px = model.phi(batch_x);
+     
+        g = step * (batch_px * model.alpha - batch_y);
+        model.alpha(mbinx, :) = model.alpha(mbinx, :) -  g;
+        DgT = bsxfun(@times,model.V, model.Q') * (model.V)' * ...
+            batch_px(:, pinx)' * g;
+        model.alpha(pinx, :) = model.alpha(pinx, :) + DgT;
     end
 end
-t = etime(clock, st);

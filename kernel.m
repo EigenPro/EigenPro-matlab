@@ -15,11 +15,11 @@ XX = sum(X.^2, 2);
 YY = sum(Y.^2, 2);
 
 D2 = bsxfun(@plus, bsxfun(@plus, -2 * XY, XX), YY');
-if strcmp(ktype, 'Gaussian')
+if strcmp(ktype, 'gaussian')
     K = exp(-D2 / (2 * s^2));
-elseif strcmp(ktype, 'Laplace')
+elseif strcmp(ktype, 'laplace')
     D = sqrt(max(D2,0));
     K = exp(-D / s);
-elseif strcmp(ktype, 'Cauchy')
-    K = 1 / (1 + D2 / s^2)
+elseif strcmp(ktype, 'cauchy')
+    K = 1 / (1 + D2 / s^2);
 end

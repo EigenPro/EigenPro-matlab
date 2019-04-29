@@ -1,9 +1,9 @@
-use_gpu = true; % gpu usage flag.
-ktype = 'Gaussian'; % kernel type.
+use_gpu = false; % gpu usage flag.
+ktype = 'gaussian'; % kernel type.
 floatx = @(x) single(x);
 
 % Load MNIST dataset.
-mnist_path = './data/mnist.mat';
+mnist_path = '../data/mnist/mnist.mat';
 data = load(mnist_path);
 
 if use_gpu
@@ -26,11 +26,11 @@ M = 4800;           % (EigenPro) subsample size.
 k = 160;            % (EigenPro) top-k eigensystem.
 
 % Set kernel bandwidth.
-if strcmp(ktype, 'Gaussian')
+if strcmp(ktype, 'gaussian')
 	s = 5;
-elseif strcmp(ktype, 'Laplace')
+elseif strcmp(ktype, 'laplace')
 	s = floatx(sqrt(10));
-elseif strcmp(ktype, 'Cauchy')
+elseif strcmp(ktype, 'cauchy')
 	s = floatx(sqrt(40));
 end
 
@@ -59,28 +59,34 @@ alpha_ep = new_weight(n, l);
 beta = new_weight(d, l);
 beta_ep = new_weight(d, l);
 cur_epoch = 0;
-pega_t = 0; epro_t = 0; rf_t = 0; repro_t = 0; % for timing.
+pega_t = 0; epro_t = 0; rf_t = 0; % for timing.
 rs.reset();
-for n_epoch = [1 5 10 20 40 80 160 320]
+ep_model = Eigenpro('random_stream', rs,...
+    'subsample_size', M, 'n_components', k, 'mem_gb', 3);
+for n_epoch = [1 2 5 10]
   fprintf('\n');
+  fprintf('EigenPro on MNIST\n');
+  stime = cputime();
+  ep_model.n_epoch = n_epoch - cur_epoch;
+  ep_model = ep_model.fit(train_x, train_y);
+  epro_t = epro_t + cputime() - stime;
+  pred_y_train = ep_model.predict(train_x);
+  pred_y = ep_model.predict(test_x);
+  
+  train_err = calculate_error(pred_y_train, train_y) * 100;
+  test_err = calculate_error(pred_y, test_y) * 100;
+  fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
+          train_err, test_err, n_epoch, epro_t);
+  % ------------------------------------  
   fprintf('Pegasos on MNIST\n');
   [alpha, t] = sgd_iterate(rs, train_x, train_y, alpha, phi_rbf, eta, ...
                            bs, n_epoch - cur_epoch, 'Pegasos');
-  pega_t = pega_t + t;
+  sgd_t = sgd_t + t;
   train_err = evaluate(train_x, train_y, alpha, phi_rbf) * 100;
   test_err = evaluate(test_x, test_y, alpha, phi_rbf) * 100;
   fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
           train_err, test_err, n_epoch, pega_t);
-
-  fprintf('Kernel EigenPro on MNIST\n');
-  [alpha_ep, t] = eigenpro_iterate(rs, train_x, train_y, alpha_ep, phi_rbf, eta, ...
-                                   bs, n_epoch - cur_epoch, 'Kernel EigenPro', k, M, floatx(1.));
-  epro_t = epro_t + t;
-  train_err = evaluate(train_x, train_y, alpha_ep, phi_rbf) * 100;
-  test_err = evaluate(test_x, test_y, alpha_ep, phi_rbf) * 100;
-  fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
-          train_err, test_err, n_epoch, epro_t);
-
+  % --------------------------------------
   fprintf('SGD with random Fourier feature on MNIST\n');
   [beta, t] = sgd_iterate(rs, train_x, train_y, beta, phi_rff, eta, ...
                           bs, n_epoch - cur_epoch, 'Linear');
@@ -88,16 +94,7 @@ for n_epoch = [1 5 10 20 40 80 160 320]
   train_err = evaluate(train_x, train_y, beta, phi_rff) * 100;
   test_err = evaluate(test_x, test_y, beta, phi_rff) * 100;
   fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
-          train_err, test_err, n_epoch, rf_t);
-
-  fprintf('EigenPro with random Fourier feature on MNIST\n');
-  [beta_ep, t] = eigenpro_iterate(rs, train_x, train_y, beta_ep, phi_rff, eta, ...
-                                  bs, n_epoch - cur_epoch, 'EigenPro', k, M, floatx(.25));
-  repro_t = repro_t + t;
-  train_err = evaluate(train_x, train_y, beta_ep, phi_rff) * 100;
-  test_err = evaluate(test_x, test_y, beta_ep, phi_rff) * 100;
-  fprintf('training error %.2f%%, testing_error %.2f%% (%d epochs, %.2f seconds)\n', ...
-          train_err, test_err, n_epoch, repro_t);
+  train_err, test_err, n_epoch, rf_t);
 
   cur_epoch = n_epoch;
 end
