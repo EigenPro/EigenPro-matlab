@@ -26,8 +26,8 @@ for epoch = 1:model.n_epoch
      
         g = step * (batch_px * model.alpha - batch_y);
         model.alpha(mbinx, :) = model.alpha(mbinx, :) -  g;
-        DgT = bsxfun(@times,model.V, model.Q') * (model.V)' * ...
-            batch_px(:, pinx)' * g;
+        DgT = bsxfun(@times,model.V, model.Q') * (model.V' * ...
+            (batch_px(:, pinx)' * g));
         model.alpha(pinx, :) = model.alpha(pinx, :) + DgT;
     end
 end

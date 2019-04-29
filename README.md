@@ -8,6 +8,7 @@ In NIPS, 2017.
 ```
 It accelerates the convergence of SGD iteration when minimizing linear and kernel least squares, defined as
 
+TODO: Update README
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\arg&space;\min_{{\pmb&space;\alpha}&space;\in&space;\mathcal{H}}&space;\frac{1}{n}&space;\sum_{i=1}^{n}&space;{&space;(\left&space;\langle&space;{\pmb&space;\alpha},&space;{\pmb&space;x}_i&space;\right&space;\rangle_\mathcal{H}&space;-&space;y_i)^2}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\arg&space;\min_{{\pmb&space;\alpha}&space;\in&space;\mathcal{H}}&space;\frac{1}{n}&space;\sum_{i=1}^{n}&space;{&space;(\left&space;\langle&space;{\pmb&space;\alpha},&space;{\pmb&space;x}_i&space;\right&space;\rangle_\mathcal{H}&space;-&space;y_i)^2}" title="\arg \min_{{\pmb \alpha} \in \mathcal{H}} \frac{1}{n} \sum_{i=1}^{n} { (\left \langle {\pmb \alpha}, {\pmb x}_i \right \rangle_\mathcal{H} - y_i)^2}" /></a>
 </p>
@@ -73,18 +74,16 @@ unzip mnist.zip
 ```
 
 ### Setting CPU/GPU flag
-User can change the first line in 'run_expr.m' to switch between GPU and CPU. When set
+User can change the first line in 'src/example_usage.m' to switch between GPU and CPU. When set
 ```
 use_gpu = true;
 ```
 the script will use MATLAB gpuarray to store data and weights.
 
 ### Selecting the kernel
-User can select the kernel function by change the second line in 'run_expr.m'.
-```
-ktype = 'Gaussian';
-```
-Current options involve 'Gaussian', 'Laplace', and 'Cauchy'.
+User can select the kernel function by adding the param 'kernel' as a key-value pair when declaring a model.
+
+The current options are 'Gaussian', 'Laplace', and 'Cauchy'.
 
 ### Running experiments (in MATLAB console)
 The experiments will compare Pegasos, Kernel EigenPro, Random Fourier Feature with linear SGD, and Random Fourier Feature with EigenPro on MNIST.
@@ -107,7 +106,7 @@ Besides, there are two methods available now: 'Pegasos' and 'Linear'.
 
 ### EigenPro iteration
 EigenPro iteration has interface similar to that of SGD iteration.
-```
+
 [new_weights, time] = ...
     eigenpro_iterate(random_seed, train_x, train_y, initial_weights, phi,
                      eta, batch_size, n_epoch, method_name, k, M, tau);

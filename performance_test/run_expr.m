@@ -3,7 +3,7 @@ ktype = 'gaussian'; % kernel type.
 floatx = @(x) single(x);
 
 % Load MNIST dataset.
-mnist_path = '../data/mnist/mnist.mat';
+mnist_path = './data/mnist/mnist.mat';
 data = load(mnist_path);
 
 if use_gpu
@@ -66,10 +66,10 @@ ep_model = Eigenpro('random_stream', rs,...
 for n_epoch = [1 2 5 10]
   fprintf('\n');
   fprintf('EigenPro on MNIST\n');
-  stime = cputime();
+  tic;
   ep_model.n_epoch = n_epoch - cur_epoch;
   ep_model = ep_model.fit(train_x, train_y);
-  epro_t = epro_t + cputime() - stime;
+  epro_t = epro_t + toc;
   pred_y_train = ep_model.predict(train_x);
   pred_y = ep_model.predict(test_x);
   
